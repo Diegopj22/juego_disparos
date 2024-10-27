@@ -3,19 +3,20 @@
  */
 class Game {
     constructor() {
-        this.started = false;
-        this.ended = false;
-        this.keyPressed = undefined;
-        this.width = 0;
-        this.height = 0;
-        this.player = undefined;
-        this.playerShots = [];
-        this.opponent = undefined;
-        this.opponentShots = [];
-        this.xDown = null;
-        this.paused = false;
-        this.score = 0; // Puntuación inicial
-        this.bossSpawned = false; // Indica si el jefe ha sido generado
+        this.started = false; // Indica si el juego ha comenzado o no
+        this.ended = false; // Indica si el juego ha terminado o no
+        this.keyPressed = undefined; // Indica la tecla que está pulsando el usuario
+        this.width = 0; // Ancho de la pantalla del juego
+        this.height = 0; // Alto de la pantalla del juego
+        this.player = undefined; // Instancia del personaje principal del juego
+        this.playerShots = []; // Disparos del personaje principal
+        this.opponent = undefined; // Instancia del oponente del juego
+        this.opponentShots = []; // Disparos del oponente
+        this.xDown = null; //  Posición en la que el usuario ha tocado la pantalla
+        this.paused = false; // Indica si el juego está pausado
+        this.score = 0; // Nuevo atributo para la puntuación
+        this.updateScore(); // Llamada al método para inicializar la puntuación en la pantalla
+        
     }
 
     /**
@@ -23,6 +24,7 @@ class Game {
      */
     start() {
         if (!this.started) {
+            // RequestAnimationFrame(this.update());
             window.addEventListener("keydown", (e) => this.checkKey(e, true));
             window.addEventListener("keyup", (e) => this.checkKey(e, false));
             window.addEventListener("touchstart", (e) => this.handleTouchStart(e, true));
@@ -61,8 +63,7 @@ class Game {
      * Añade un nuevo disparo al juego, ya sea del oponente o del personaje principal
      * @param character {Character} Personaje que dispara
      */
-
-    shoot (character) {
+    shoot(character) {
         const arrayShots = character instanceof Player ? this.playerShots : this.opponentShots;
 
         arrayShots.push(new Shot(this, character));
@@ -73,7 +74,7 @@ class Game {
      * Elimina un disparo del juego cuando se sale de la pantalla o el juego se acaba
      * @param shot {Shot} Disparo que se quiere eliminar
      */
-    removeShot (shot) {
+    removeShot(shot) {
         const shotsArray = shot.type === "PLAYER" ? this.playerShots : this.opponentShots,
             index = shotsArray.indexOf(shot);
 
@@ -86,52 +87,13 @@ class Game {
      * Elimina al oponente del juego
      */
     removeOpponent() {
-        if (this.opponent) {
+        if (this.opponent instanceof Opponent) {
             document.body.removeChild(this.opponent.image);
-            this.score++; // Incrementar la puntuación al eliminar un oponente
-            this.updateScoreDisplay(); // Actualizar la puntuación en la pantalla
-
-            // Generar un jefe cada 5 puntos
-            if (this.score % 5 === 0) {
-                this.bossSpawned = true; // Indicar que se ha generado un jefe
-                this.opponent = new Boss(this); // Cambiar a un jefe final
-                this.opponent = this.boss; // Asignar el jefe como el oponente actual
-            } else {
-                this.opponent = new Opponent(this); // Generar un nuevo oponente
-            }
+            this.opponent = new Boss(this);
+        } else {
+            document.body.removeChild(this.opponent.image);
+            this.opponent = new Opponent(this);
         }
-    }
-
-    update() {
-        if (!this.ended) {
-            this.player.update();
-            if (this.opponent === undefined) {
-                this.opponent = new Opponent(this); // Generar un oponente si no existe
-            }
-            this.opponent.update();
-            this.playerShots.forEach((shot) => {
-                shot.update();
-            });
-            this.opponentShots.forEach((shot) => {
-                shot.update();
-            });
-            this.checkCollisions();
-            this.render();
-        }
-    }
-
-    /**
-     * Actualiza la visualización de la puntuación
-     */
-    updateScoreDisplay() {
-        document.getElementById("scoreli").innerHTML = `Score: ${this.score}`;
-    }
-
-    /**
-     * Actualiza la visualización de las vidas
-     */
-    updateLivesDisplay() {
-        document.getElementById("livesli").innerHTML = `Lives: ${this.player.lives}`;
     }
 
     /**
@@ -139,22 +101,22 @@ class Game {
      * @param event {Event} Evento de tecla levantada/pulsada
      * @param isKeyDown {Boolean} Indica si la tecla está pulsada (true) o no (false)
      */
-    checkKey (event, isKeyDown) {
+    checkKey(event, isKeyDown) {
         if (!isKeyDown) {
             this.keyPressed = undefined;
         } else {
             switch (event.keyCode) {
-            case 37: // Flecha izquierda
-                this.keyPressed = KEY_LEFT;
-                break;
-            case 32: // Barra espaciadora
-                this.keyPressed = KEY_SHOOT;
-                break;
-            case 39: // Flecha derecha
-                this.keyPressed = KEY_RIGHT;
-                break;
-            case 27: case 81: // Tecla ESC o Q
-                this.pauseOrResume();
+                case 37: // Flecha izquierda
+                    this.keyPressed = KEY_LEFT;
+                    break;
+                case 32: // Barra espaciadora
+                    this.keyPressed = KEY_SHOOT;
+                    break;
+                case 39: // Flecha derecha
+                    this.keyPressed = KEY_RIGHT;
+                    break;
+                case 27: case 81: // Tecla ESC o Q
+                    this.pauseOrResume();
             }
         }
     }
@@ -164,7 +126,7 @@ class Game {
      * @param evt {Event} Evento de tocar la pantalla
      * @returns {*} Posición de la pantalla que está tocando el usuario
      */
-    getTouches (evt) {
+    getTouches(evt) {
         return evt.touches || evt.originalEvent.touches;
     }
 
@@ -172,7 +134,7 @@ class Game {
      * Maneja el evento de tocar sobre la pantalla
      * @param evt {Event} Evento de tocar la pantalla
      */
-    handleTouchStart (evt) {
+    handleTouchStart(evt) {
         const firstTouch = this.getTouches(evt)[0];
 
         this.xDown = firstTouch.clientX;
@@ -183,7 +145,7 @@ class Game {
      * Maneja el evento de arrastrar el dedo sobre la pantalla
      * @param evt {Event} Evento de arrastrar el dedo sobre la pantalla
      */
-    handleTouchMove (evt) {
+    handleTouchMove(evt) {
         if (!this.xDown) {
             return;
         }
@@ -203,7 +165,7 @@ class Game {
     /**
      * Comrpueba si el personaje principal y el oponente se han chocado entre sí o con los disparos haciendo uso del método hasCollision
      */
-    checkCollisions () {
+    checkCollisions() {
         let impact = false;
 
         for (let i = 0; i < this.opponentShots.length; i++) {
@@ -228,7 +190,7 @@ class Game {
      * @param item2 {Entity} Elemento del juego 2
      * @returns {boolean} Devuelve true si se están chocando y false si no.
      */
-    hasCollision (item1, item2) {
+    hasCollision(item1, item2) {
         if (item2 === undefined) {
             return false; // When opponent is undefined, there is no collision
         }
@@ -245,16 +207,31 @@ class Game {
     }
 
     /**
-     * resetea el juego
+     * Termina el juego
      */
-     resetGame () {
-       document.location.reload();
-     }
+    endGame() {
+        this.ended = true;
+
+        if (this.player.lives <= 0) {
+            // Si el jugador se queda sin vidas
+            let gameOverImage = new Entity(this, this.width / 2, "auto", this.width / 4, this.height / 4, 0, "assets/game_over.png");
+            gameOverImage.render();
+        }
+    }
+
+    c
+
+    /**
+     * Resetea el juego
+     */
+    resetGame() {
+        document.location.reload();
+    }
 
     /**
      * Actualiza los elementos del juego
      */
-    update () {
+    update() {
         if (!this.ended) {
             this.player.update();
             if (this.opponent === undefined) {
@@ -275,7 +252,7 @@ class Game {
     /**
      * Muestra todos los elementos del juego en la pantalla
      */
-    render () {
+    render() {
         this.player.render();
         if (this.opponent !== undefined) {
             this.opponent.render();
@@ -289,17 +266,18 @@ class Game {
     }
 
     /**
-    * Termina el juego
-    */
-    endGame() {
-        this.ended = true;
-    
-        // Verificar si el jefe ha sido derrotado y el jugador tiene vidas
-        let gameOverImage = (this.player.lives > 0 && this.boss && this.boss.isDefeated) 
-                            ? YOU_WIN_PICTURE 
-                            : GAME_OVER_PICTURE;
-    
-        let gameOver = new Entity(this, this.width / 2, "auto", this.width / 4, this.height / 4, 0, gameOverImage);
-        gameOver.render();
+     * Aumenta la puntuación y actualiza la pantalla
+     * @param points {Number} Puntos a sumar a la puntuación actual
+     */
+    increaseScore(points) {
+        this.score += points;
+        this.updateScore();
+    }
+
+    /**
+     * Actualiza la puntuación en la pantalla
+     */
+    updateScore() {
+        document.getElementById("scoreli").innerHTML = `Score: ${this.score}`;
     }
 }
