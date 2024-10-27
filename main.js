@@ -3,13 +3,7 @@ const OPPONENT_HEIGHT = 5,
     OPPONENT_PICTURE_DEAD = "assets/malo_muerto.png",
     OPPONENT_SPEED = 5,
     OPPONENT_WIDTH = 5,
-    BOSS_PICTURE = "assets/jefe.png",
-    BOSS_PICTURE_DEAD = "assets/jefe_muerto.png",
-    BOSS_SPEED = 10,
-    BOSS_WIDTH = 10,
-    BOSS_HEIGHT = 10,
     GAME_OVER_PICTURE = "assets/game_over.png",
-    YOU_WIN_PICTURE = "assets/you_win.png",
     KEY_LEFT = "LEFT",
     KEY_RIGHT = "RIGHT",
     KEY_SHOOT = "SHOOT",
@@ -24,7 +18,9 @@ const OPPONENT_HEIGHT = 5,
     SHOT_PICTURE_PLAYER = "assets/shot1.png",
     SHOT_PICTURE_OPPONENT = "assets/shot2.png",
     SHOT_WIDTH = 1.5,
-    INITIAL_LIVES = 3; // Nueva constante para las vidas del jugador
+    PLAYER_INITIAL_LIVES = 3; // Nuevo atributo para el número inicial de vidas del jugador
+    ;
+      
 
 function getRandomNumber(range) {
     return Math.floor(Math.random() * range);
@@ -35,8 +31,14 @@ function collision(div1, div2) {
         b = div2.getBoundingClientRect();
     return !(a.bottom < b.top || a.top > b.bottom || a.right < b.left || a.left > b.right);
 }
+
 var game;
+
 document.addEventListener("DOMContentLoaded", () => {
     game = new Game();
+
+    // Inicializar el número de vidas del jugador
+    Player.prototype.lives = PLAYER_INITIAL_LIVES;
+
     game.start();
 });
