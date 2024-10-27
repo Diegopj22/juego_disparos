@@ -5,7 +5,7 @@ class Opponent extends Character {
     constructor(game) {
         const height = OPPONENT_HEIGHT * game.width / 100,
             width = OPPONENT_WIDTH * game.width / 100,
-            x = getRandomNumber(game.width - width),
+            x = getRandomNumber(game.width - width / 2),
             y = 0,
             speed = OPPONENT_SPEED,
             myImage = OPPONENT_PICTURE,
@@ -13,13 +13,11 @@ class Opponent extends Character {
 
         super(game, width, height, x, y, speed, myImage, myImageDead);
         this.direction = "R"; // Dirección hacia la que se mueve el oponente
+        this.health = 3;
         setTimeout(() => this.shoot(), 1000 + getRandomNumber(2500));
     }
 
-    /**
-     * Crea un nuevo disparo
-     */
-    shoot () {
+    shoot() {
         if (!this.dead && !this.game.ended) {
             if (!this.game.paused) {
                 this.game.shoot(this);
@@ -28,30 +26,39 @@ class Opponent extends Character {
         }
     }
 
-    /**
-     * Actualiza los atributos de posición del oponente
-     */
     update() {
         if (!this.dead && !this.game.ended) {
             this.y += this.speed;
             if (this.y > this.game.height) {
-                this.y = 0; // Reiniciar la posición vertical
-                this.x = getRandomNumber(this.game.width - this.width); // Cambiar la posición horizontal aleatoriamente
+                this.y = 0;
+            }
+            if (this.direction === "R") {
+                if (this.x < this.game.width - this.width - this.speed) {
+                    this.x += this.speed;
+                } else {
+                    this.horizontalMov = 0;
+                }
+            } else if (this.x > this.speed) {
+                this.x -= this.speed;
+            } else {
+                this.horizontalMov = 0;
+            }
+            this.horizontalMov -= this.speed;
+            if (this.horizontalMov < this.speed) {
+                this.horizontalMov = getRandomNumber(this.game.width / 2);
+                this.direction = this.direction === "R" ? "L" : "R";
             }
         }
     }
 
-    /**
-     * Mata al oponente
-     */
     collide() {
-        
         if (!this.dead) {
+            // Modificación para sumar puntos al jugador al eliminar un oponente
+            this.game.increaseScore(1);
             setTimeout(() => {
                 this.game.removeOpponent();
             }, 2000);
             super.collide();
         }
-
     }
 }
