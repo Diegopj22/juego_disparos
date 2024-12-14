@@ -1,3 +1,4 @@
+// Constantes para el juego
 const OPPONENT_HEIGHT = 5,
     OPPONENT_PICTURE = "assets/malo.png",
     OPPONENT_PICTURE_DEAD = "assets/malo_muerto.png",
@@ -19,13 +20,13 @@ const OPPONENT_HEIGHT = 5,
     SHOT_PICTURE_OPPONENT = "assets/shot2.png",
     SHOT_WIDTH = 1.5,
     PLAYER_INITIAL_LIVES = 3; // Nuevo atributo para el número inicial de vidas del jugador
-    ;
-      
 
+// Función para obtener números aleatorios
 function getRandomNumber(range) {
     return Math.floor(Math.random() * range);
 }
 
+// Función para detectar colisiones
 function collision(div1, div2) {
     const a = div1.getBoundingClientRect(),
         b = div2.getBoundingClientRect();
@@ -41,4 +42,27 @@ document.addEventListener("DOMContentLoaded", () => {
     Player.prototype.lives = PLAYER_INITIAL_LIVES;
 
     game.start();
+});
+
+// Implementación del botón de instalación
+let deferredPrompt;
+const installButton = document.getElementById('installButton');
+
+// Escuchar el evento beforeinstallprompt
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installButton.style.display = 'block';
+
+    installButton.addEventListener('click', () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('Usuario aceptó la instalación');
+            } else {
+                console.log('Usuario rechazó la instalación');
+            }
+            deferredPrompt = null;
+        });
+    });
 });
